@@ -1,12 +1,19 @@
 from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import requests
 import pandas as pd
 
 # Define date ranges for historical irradiation data
 
 today = datetime.today()
-end_date = (datetime.today() - timedelta(days=8)).strftime('%Y-%m-%d')
+if today.day > 9:
+    # last_day_of_last_month
+    end_date = date(today.year, today.month, 1) - timedelta(days=1)
+else:
+    # last day of last 2nd month
+    last_month = date(today.year, today.month, 1) - timedelta(days=1)
+    end_date = date(last_month.year, last_month.month, 1) - timedelta(days=1)
+
 start_date = (today - timedelta(days=365 * 20)).strftime('%Y-%m-%d')
 
 # Load pre-trained time series model
@@ -19,7 +26,8 @@ def predict_city_irradiation(df_):
         id_column="ibge_code",
         timestamp_column="time"
     )
-    return model.predict(city)
+
+    return model.predict(city, model='AutoGluonTabular').reset_index()
 
 
 def get_ibge_code(lat, lon):
@@ -35,7 +43,7 @@ def get_ibge_code(lat, lon):
         raise ValueError('Could not find ibge code for city')
 
 
-def get_irradiation_data(lat, lon):
+def get_historical_data(lat, lon):
     url = (f'https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}'
            f'&start_date={start_date}&end_date={end_date}&daily=weathercode,shortwave_radiation_sum'
            '&timezone=America%2FSao_Paulo')
@@ -43,6 +51,23 @@ def get_irradiation_data(lat, lon):
     response = requests.get(url)
     df = pd.DataFrame(response.json()['daily'])
     ibge_code = get_ibge_code(lat, lon)
-    df['ibge_code'] = ibge_code
+    df = df.assign(ibge_code=ibge_code, time=pd.to_datetime(df['time'], format='%Y-%m-%d'))
     return df
 
+
+def get_irrad_data(lat, lon):
+    irrad_past = get_historical_data(lat, lon)
+
+    monthly_irrad_past = irrad_past.groupby(
+        ['ibge_code', pd.Grouper(key='time', freq='M')]
+    )['shortwave_radiation_sum'].sum().to_frame().reset_index()
+
+    irrad_pred = predict_city_irradiation(monthly_irrad_past)[['timestamp', 'mean']]
+
+    irrad_pred = irrad_pred.rename(
+        columns={'timestamp': 'time', 'mean': 'shortwave_radiation_sum'}
+    ).assign(type='predicted')
+
+    irrad_past = monthly_irrad_past[['time', 'shortwave_radiation_sum']].assign(type='actual')
+
+    return pd.concat([irrad_past, irrad_pred])
