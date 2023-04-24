@@ -18,7 +18,7 @@ else:
 start_date = (today - timedelta(days=365 * 20)).strftime('%Y-%m-%d')
 
 # Load pre-trained time series model
-full_path = os.path.abspath("./models/autogluon-m4-monthly")
+full_path = os.path.abspath("./autogluon-m4-monthly")
 model = TimeSeriesPredictor.load(full_path)
 
 def predict_city_irradiation(df_):
@@ -32,9 +32,9 @@ def predict_city_irradiation(df_):
 
 
 def get_ibge_code(lat, lon):
-    url = f'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?lat={lat}&lon={lon}'
+    url = f'http://servicodados.ibge.gov.br/api/v1/localidades/municipios?lat={lat}&lon={lon}'
 
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
 
     if response.status_code == 200:
         data = response.json()
