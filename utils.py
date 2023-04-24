@@ -2,6 +2,7 @@ from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
 from datetime import datetime, timedelta, date
 import requests
 import pandas as pd
+import os
 
 # Define date ranges for historical irradiation data
 
@@ -17,8 +18,17 @@ else:
 start_date = (today - timedelta(days=365 * 20)).strftime('%Y-%m-%d')
 
 # Load pre-trained time series model
-model = TimeSeriesPredictor.load('models/autogluon-m4-monthly')
-
+try:
+    model = TimeSeriesPredictor.load('models/autogluon-m4-monthly')
+    print('Modelo carregado1!')
+except:
+    try:
+        full_path = os.path.abspath("./models/autogluon-m4-monthly")
+        model = TimeSeriesPredictor.load(full_path)
+        print('Modelo carregado2!')
+    except:
+        model = TimeSeriesPredictor.load('autogluon-m4-monthly')
+        print('Modelo carregado3!')
 
 def predict_city_irradiation(df_):
     city = TimeSeriesDataFrame.from_data_frame(
