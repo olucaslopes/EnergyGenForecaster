@@ -1,6 +1,8 @@
 from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
 from datetime import datetime, timedelta, date
 import requests
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 import pandas as pd
 import os
 
@@ -21,6 +23,9 @@ start_date = (today - timedelta(days=365 * YEARS_OF_HISTORICAL_DATA)).strftime('
 # Load pre-trained time series model
 MODEL_PATH = os.path.abspath("./autogluon-m4-monthly")
 model = TimeSeriesPredictor.load(MODEL_PATH)
+
+geolocator = Nominatim(user_agent="draw2text2", timeout=2)
+geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
 
 
 def predict_city_irradiation(df: pd.DataFrame) -> pd.DataFrame:
@@ -115,3 +120,8 @@ def get_irrad_data(lat: float, lon: float) -> pd.DataFrame:
     irrad_past = monthly_irrad_past[['time', 'shortwave_radiation_sum']].assign(type='actual')
 
     return pd.concat([irrad_past, irrad_pred])
+
+
+def get_location_from_addr(addr: str):
+    location = geocode(addr, addressdetails=True)
+    return location

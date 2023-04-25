@@ -2,8 +2,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 import folium
 from streamlit_folium import st_folium
-from geopy.geocoders import Nominatim
-from utils import get_irrad_data
+from utils import get_irrad_data, get_location_from_addr
 import plotly.express as px
 
 st.set_page_config(page_title='Energy Generation Predictor', layout='wide', page_icon='🔌')
@@ -60,8 +59,7 @@ with st.sidebar:
         if loc_input:
             st.session_state.pressed_change_addr = False
             try:
-                geolocator = Nominatim(user_agent="draw2text2")
-                location = geolocator.geocode(loc_input, addressdetails=True)
+                location = get_location_from_addr(loc_input)
                 new_loc_name = f"{location.raw['address']['city']}, {location.raw['address']['ISO3166-2-lvl4'][-2:]}"
             except BaseException:
                 st.error('Could not find address')
