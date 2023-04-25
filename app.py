@@ -84,7 +84,8 @@ st.header('🔌 Energy Generation Predictor')
 
 if 'irrad_data' not in st.session_state or st.session_state.changed_addr:
     st.session_state.changed_addr = False
-    st.session_state.irrad_data = get_irrad_data(st.session_state.loc_lat, st.session_state.loc_lon)
+    irrad_data = get_irrad_data(st.session_state.loc_lat, st.session_state.loc_lon)
+    st.session_state.irrad_data = irrad_data
     # st.session_state.irrad_data = (irrad_data
     #                                .assign(type=irrad_data['true_label'].replace({0: 'predicted', 1: 'actual'}))
     #                                .drop(columns='true_value'))
