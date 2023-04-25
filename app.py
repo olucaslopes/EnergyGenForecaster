@@ -76,14 +76,6 @@ with st.sidebar:
 ##########################
 st.header('🔌 Energy Generation Predictor')
 
-if 'irrad_data' not in st.session_state or st.session_state.changed_addr:
-    st.session_state.changed_addr = False
-    irrad_data = get_irrad_data(st.session_state.loc_lat, st.session_state.loc_lon)
-    st.session_state.irrad_data = irrad_data
-    # st.session_state.irrad_data = (irrad_data
-    #                                .assign(type=irrad_data['true_label'].replace({0: 'predicted', 1: 'actual'}))
-    #                                .drop(columns='true_value'))
-
 pred_irrad_sum = st.session_state.irrad_data.query('type == "predicted"')['shortwave_radiation_sum'].sum()
 
 # Calculate generated energy
