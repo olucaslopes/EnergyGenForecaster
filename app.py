@@ -17,12 +17,6 @@ if 'loc_lat' not in st.session_state:
     st.session_state.loc_lat = -23.55
 if 'loc_lon' not in st.session_state:
     st.session_state.loc_lon = -46.64
-if 'panels_area' not in st.session_state:
-    st.session_state.panels_area = 18
-if 'panels_rend' not in st.session_state:
-    st.session_state.panels_rend = 15
-if 'energy_price' not in st.session_state:
-    st.session_state.energy_price = 0.656
 if 'irrad_data' not in st.session_state or st.session_state.changed_addr:
     st.session_state.changed_addr = False
     st.session_state.irrad_data = get_irrad_data(st.session_state.loc_lat, st.session_state.loc_lon)
@@ -37,14 +31,14 @@ with open('style.css') as f:
 
 with st.sidebar:
     # user inputs
-    st.session_state.panels_area = st.number_input('📐 Área total em m² dos painéis solares', step=5, min_value=2,
+    panels_area = st.number_input('📐 Área total em m² dos painéis solares', step=5, min_value=2,
                                                    value=18)
-    st.session_state.panels_rend = st.slider('💱 Eficiência média dos painéis solares', min_value=0, max_value=100,
+    panels_rend = st.slider('💱 Eficiência média dos painéis solares', min_value=0, max_value=100,
                                              step=1, format='%d%%',
                                              value=15)
-    number = st.number_input('💵 Tarifa média por kWh (R$)', min_value=0.05, max_value=2., step=0.001, value=0.656,
+    energy_price = st.number_input('💵 Tarifa média por kWh (R$)', min_value=0.05, max_value=2., step=0.001, value=0.656,
                              format='%.3f')
-    st.session_state.energy_price = number
+    # st.session_state.energy_price = number
 
     col_desc_loc, col_alt_loc = st.columns(2)
     with col_desc_loc:
@@ -93,8 +87,8 @@ if 'irrad_data' not in st.session_state or st.session_state.changed_addr:
 pred_irrad_sum = st.session_state.irrad_data.query('type == "predicted"')['shortwave_radiation_sum'].sum()
 
 # Calculate generated energy
-gen_energy = pred_irrad_sum * st.session_state.panels_area * st.session_state.panels_rend / 100
-savings = gen_energy * st.session_state.energy_price
+gen_energy = pred_irrad_sum * panels_area * panels_rend / 100
+savings = gen_energy * energy_price
 
 col_mainsub1, col_mainsub2 = st.columns(2)
 with col_mainsub1:
@@ -109,7 +103,7 @@ ten_years_ago = datetime.today() - timedelta(days=365 * 10)
 
 st.session_state.irrad_data = st.session_state.irrad_data.assign(
     kWh=st.session_state.irrad_data[
-            'shortwave_radiation_sum'] * st.session_state.panels_area * st.session_state.panels_rend / 100
+            'shortwave_radiation_sum'] * panels_area * panels_rend / 100
 )
 fig1 = px.line(
     st.session_state.irrad_data[(st.session_state.irrad_data['time'] >= ten_years_ago)],
