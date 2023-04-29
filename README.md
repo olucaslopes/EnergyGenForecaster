@@ -1,6 +1,10 @@
 # Energy Generation Forecaster
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://energygenforecaster.streamlit.app/) 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://energygenforecaster.streamlit.app/)
+
+<p align="center">
+<img src="img/cover.png" width="80%" align="center"/>
+</p>
 
 Energy Generation Forecaster is a time series forecasting app that predicts solar energy generation potential for homeowners across all 5570 Brazilian cities based on historical solar irradiation data. This project was developed to help homeowners accurately predict the energy they could generate and the savings they could have by installing solar panels on their property.
 
