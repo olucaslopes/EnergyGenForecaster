@@ -32,14 +32,16 @@ with st.sidebar:
         step=5,
         min_value=2,
         value=18,
+        help='Soma da área de todos os painéis solares instalados'
     )
     panels_rend = st.slider(
-        "💱 Eficiência média dos painéis solares",
+        "💱 Eficiência média dos painéis solares (%)",
         min_value=0,
         max_value=100,
         step=1,
         format="%d%%",
         value=15,
+        help="Porcentagem de energia solar (irradiação) convertida em eletricidade pelos painéis solares"
     )
     energy_price = st.number_input(
         "💵 Tarifa média por kWh (R$)",
@@ -48,6 +50,7 @@ with st.sidebar:
         step=0.001,
         value=0.656,
         format="%.3f",
+        help='Preço cobrado por quilowatt-hora de energia elétrica'
     )
 
     col_desc_loc, col_alt_loc = st.columns(2)
