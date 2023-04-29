@@ -24,7 +24,6 @@
 /* Card */
 /* Adapted from https://startbootstrap.com/theme/sb-admin-2 */
 div[data-testid="metric-container"] {
-    background-color: #FFFFFF;
     border: 1px solid #CCCCCC;
     padding: 2% 2% 2% 5%;
     border-radius: 5px;
