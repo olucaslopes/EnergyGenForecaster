@@ -4,7 +4,7 @@ from streamlit_folium import st_folium
 from utils import get_irrad_data, get_location_from_addr
 from helpers import get_map, plot_monthly_energy_generated
 
-st.set_page_config(page_title='Energy Generation Predictor', layout='wide', page_icon='🔌')
+st.set_page_config(page_title='Energy Generation Forecaster', layout='wide', page_icon='🔌')
 
 if 'pressed_change_addr' not in st.session_state:
     st.session_state.pressed_change_addr = False
@@ -91,7 +91,7 @@ with st.sidebar:
         st_folium(m, height=100, width=None)
 
 ##########################
-st.header('🔌 Energy Generation Predictor')
+st.header('🔌 Energy Generation Forecaster')
 
 pred_irrad_sum = st.session_state.irrad_data.query('type == "predicted"')['shortwave_radiation_sum'].sum()
 
