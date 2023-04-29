@@ -20,9 +20,6 @@ if 'loc_lon' not in st.session_state:
 if 'irrad_data' not in st.session_state or st.session_state.changed_addr:
     st.session_state.changed_addr = False
     st.session_state.irrad_data = get_irrad_data(st.session_state.loc_lat, st.session_state.loc_lon)
-    # st.session_state.irrad_data = (irrad_data
-    #                                .assign(type=irrad_data['true_label'].replace({0: 'predicted', 1: 'actual'}))
-    #                                .drop(columns='true_value'))
 
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -31,14 +28,28 @@ with open('style.css') as f:
 
 with st.sidebar:
     # user inputs
-    panels_area = st.number_input('📐 Área total em m² dos painéis solares', step=5, min_value=2,
-                                                   value=18)
-    panels_rend = st.slider('💱 Eficiência média dos painéis solares', min_value=0, max_value=100,
-                                             step=1, format='%d%%',
-                                             value=15)
-    energy_price = st.number_input('💵 Tarifa média por kWh (R$)', min_value=0.05, max_value=2., step=0.001, value=0.656,
-                             format='%.3f')
-    # st.session_state.energy_price = number
+    panels_area = st.number_input(
+        "📐 Área total em m² dos painéis solares",
+        step=5,
+        min_value=2,
+        value=18,
+    )
+    panels_rend = st.slider(
+        "💱 Eficiência média dos painéis solares",
+        min_value=0,
+        max_value=100,
+        step=1,
+        format="%d%%",
+        value=15,
+    )
+    energy_price = st.number_input(
+        "💵 Tarifa média por kWh (R$)",
+        min_value=0.05,
+        max_value=2.0,
+        step=0.001,
+        value=0.656,
+        format="%.3f",
+    )
 
     col_desc_loc, col_alt_loc = st.columns(2)
     with col_desc_loc:
@@ -55,7 +66,10 @@ with st.sidebar:
                 st.session_state.pressed_change_addr = False
                 try:
                     location = get_location_from_addr(loc_input)
-                    new_loc_name = f"{location.raw['address']['city']}, {location.raw['address']['ISO3166-2-lvl4'][-2:]}"
+                    new_loc_name = (
+                        f"{location.raw['address']['city']}, "
+                        f"{location.raw['address']['ISO3166-2-lvl4'][-2:]}"
+                    )
                 except BaseException:
                     st.error('Could not find address')
                 else:

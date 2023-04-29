@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, date
 import requests
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
+from geopy.location import Location
 import pandas as pd
 import os
 
@@ -24,6 +25,7 @@ start_date = (today - timedelta(days=365 * YEARS_OF_HISTORICAL_DATA)).strftime('
 MODEL_PATH = os.path.abspath("./autogluon-m4-monthly")
 model = TimeSeriesPredictor.load(MODEL_PATH)
 
+# Initialize geolocator and rate limiter
 geolocator = Nominatim(user_agent="draw2text2", timeout=2)
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
 
@@ -33,17 +35,19 @@ def predict_city_irradiation(df: pd.DataFrame) -> pd.DataFrame:
     Predict the shortwave radiation sum for a city using a pre-trained time series model.
 
     Args:
-        df: A pandas DataFrame containing historical shortwave radiation sum data.
+        df (pandas.DataFrame): A pandas DataFrame containing historical shortwave radiation sum data.
 
     Returns:
-        A pandas DataFrame containing the predicted shortwave radiation sum for the given city.
+        pandas.DataFrame: A pandas DataFrame containing the predicted shortwave radiation sum for the given city.
     """
+    # Convert input DataFrame to TimeSeriesDataFrame
     city = TimeSeriesDataFrame.from_data_frame(
         df,
         id_column="ibge_code",
         timestamp_column="time"
     )
 
+    # Use pre-trained model to make predictions
     return model.predict(city, model='AutoGluonTabular').reset_index()
 
 
@@ -52,17 +56,18 @@ def get_ibge_code(lat: float, lon: float) -> str:
     Get the IBGE code for the municipality located at the given latitude and longitude.
 
     Args:
-        lat: The latitude of the municipality.
-        lon: The longitude of the municipality.
+        lat (float): The latitude of the municipality.
+        lon (float): The longitude of the municipality.
 
     Returns:
-        The IBGE code of the municipality as a string.
+        str: The IBGE code of the municipality as a string.
     """
+    # Use IBGE API to get municipality data based on lat/long
     url = f'http://servicodados.ibge.gov.br/api/v1/localidades/municipios?lat={lat}&lon={lon}'
-
     response = requests.get(url, verify=False)
 
     if response.status_code == 200:
+        # Parse JSON response to get IBGE code
         data = response.json()
         codigo_ibge = data[0]['id']
         return codigo_ibge
@@ -122,6 +127,15 @@ def get_irrad_data(lat: float, lon: float) -> pd.DataFrame:
     return pd.concat([irrad_past, irrad_pred])
 
 
-def get_location_from_addr(addr: str):
+def get_location_from_addr(addr: str) -> Location:
+    """
+    Get latitude and longitude of a given address.
+
+    Args:
+        addr (str): The address for which to get the latitude and longitude.
+
+    Returns:
+        geopy.location.Location: Geopy location object
+    """
     location = geocode(addr, addressdetails=True)
     return location
