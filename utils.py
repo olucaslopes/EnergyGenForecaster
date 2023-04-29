@@ -6,6 +6,7 @@ from geopy.extra.rate_limiter import RateLimiter
 from geopy.location import Location
 import pandas as pd
 import os
+import streamlit as st
 
 # Define constants for readability
 LAST_DAY_OF_MONTH = 9
@@ -21,13 +22,21 @@ else:
 
 start_date = (today - timedelta(days=365 * YEARS_OF_HISTORICAL_DATA)).strftime('%Y-%m-%d')
 
-# Load pre-trained time series model
-MODEL_PATH = os.path.abspath("./autogluon-m4-monthly")
-model = TimeSeriesPredictor.load(MODEL_PATH)
 
 # Initialize geolocator and rate limiter
 geolocator = Nominatim(user_agent="draw2text2", timeout=2)
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
+
+
+@st.cache_resource
+def load_model():
+    """
+    Load pre-trained time series model
+    :return: TimeSeriesPredictor
+    """
+    model_path = os.path.abspath("./autogluon-m4-monthly")
+    model = TimeSeriesPredictor.load(model_path)
+    return model
 
 
 def predict_city_irradiation(df: pd.DataFrame) -> pd.DataFrame:
@@ -48,6 +57,7 @@ def predict_city_irradiation(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Use pre-trained model to make predictions
+    model = load_model()
     return model.predict(city, model='AutoGluonTabular').reset_index()
 
 
@@ -99,6 +109,7 @@ def get_historical_data(lat: float, lon: float) -> pd.DataFrame:
     return df
 
 
+@st.cache_data
 def get_irrad_data(lat: float, lon: float) -> pd.DataFrame:
     """
     Get actual and predicted shortwave radiation sum data for a given location.

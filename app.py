@@ -84,7 +84,7 @@ with st.sidebar:
                         # Else update app
                         st.session_state.changed_addr = True
                         st.session_state.loc_lat, st.session_state.loc_lon = lat, lon
-                        st.experimental_rerun()
+                        # st.experimental_rerun()
 
     if not st.session_state.pressed_change_addr:
         m = get_map(st.session_state.loc_lat, st.session_state.loc_lon)
