@@ -1,9 +1,8 @@
 import streamlit as st
 from datetime import datetime, timedelta
-import folium
 from streamlit_folium import st_folium
 from utils import get_irrad_data, get_location_from_addr
-import plotly.express as px
+from helpers import get_map, plot_monthly_energy_generated
 
 st.set_page_config(page_title='Energy Generation Predictor', layout='wide', page_icon='🔌')
 
@@ -85,14 +84,7 @@ with st.sidebar:
                         st.experimental_rerun()
 
     if not st.session_state.pressed_change_addr:
-        m = folium.Map(location=[st.session_state.loc_lat, st.session_state.loc_lon],
-                       zoom_start=10,
-                       zoom_control=False,
-                       scrollWheelZoom=False,
-                       dragging=False)
-        folium.Marker(
-            [st.session_state.loc_lat, st.session_state.loc_lon]
-        ).add_to(m)
+        m = get_map(st.session_state.loc_lat, st.session_state.loc_lon)
         st_folium(m, height=100, width=None)
 
 ##########################
@@ -119,19 +111,9 @@ st.session_state.irrad_data = st.session_state.irrad_data.assign(
     kWh=st.session_state.irrad_data[
             'shortwave_radiation_sum'] * panels_area * panels_rend / 100
 )
-fig1 = px.line(
-    st.session_state.irrad_data[(st.session_state.irrad_data['time'] >= ten_years_ago)],
-    x='time', y='kWh',
-    color='type',
-    height=300
+fig1 = plot_monthly_energy_generated(
+    # Plot last 10 years of data and predicted values
+    data=st.session_state.irrad_data[(st.session_state.irrad_data['time'] >= ten_years_ago)]
 )
-fig1.update_layout(legend=dict(
-    orientation="h",
-    entrywidth=70,
-    yanchor="bottom",
-    y=1.02,
-    xanchor="right",
-    x=1
-))
 
 st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
