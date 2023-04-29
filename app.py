@@ -48,30 +48,38 @@ with st.sidebar:
 
     if change_addr or st.session_state.pressed_change_addr:
         st.session_state.pressed_change_addr = True
-        st.session_state.changed_addr = True
-        loc_input = st.text_input('Digite a localização')
-        if loc_input:
-            st.session_state.pressed_change_addr = False
-            try:
-                location = get_location_from_addr(loc_input)
-                new_loc_name = f"{location.raw['address']['city']}, {location.raw['address']['ISO3166-2-lvl4'][-2:]}"
-            except BaseException:
-                st.error('Could not find address')
-            else:
-                st.session_state.loc_name = new_loc_name
-                lat, lon = float(location.raw['lat']), float(location.raw['lon'])
-                st.session_state.loc_lat, st.session_state.loc_lon = lat, lon
-                st.experimental_rerun()
+        with st.form("change_loc_form"):
+            loc_input = st.text_input('Digite a nova localização')
+            submit_new_loc = st.form_submit_button('Procurar')
+            if submit_new_loc:
+                st.session_state.pressed_change_addr = False
+                try:
+                    location = get_location_from_addr(loc_input)
+                    new_loc_name = f"{location.raw['address']['city']}, {location.raw['address']['ISO3166-2-lvl4'][-2:]}"
+                except BaseException:
+                    st.error('Could not find address')
+                else:
+                    st.session_state.loc_name = new_loc_name
+                    lat, lon = float(location.raw['lat']), float(location.raw['lon'])
+                    if lat == st.session_state.loc_lat and lon == st.session_state.loc_lon:
+                        # If lat and lon doesn't change, ignore
+                        pass
+                    else:
+                        # Else update app
+                        st.session_state.changed_addr = True
+                        st.session_state.loc_lat, st.session_state.loc_lon = lat, lon
+                        st.experimental_rerun()
 
-    m = folium.Map(location=[st.session_state.loc_lat, st.session_state.loc_lon],
-                   zoom_start=10,
-                   zoom_control=False,
-                   scrollWheelZoom=False,
-                   dragging=False)
-    folium.Marker(
-        [st.session_state.loc_lat, st.session_state.loc_lon]
-    ).add_to(m)
-    st_folium(m, height=100, width=None)
+    if not st.session_state.pressed_change_addr:
+        m = folium.Map(location=[st.session_state.loc_lat, st.session_state.loc_lon],
+                       zoom_start=10,
+                       zoom_control=False,
+                       scrollWheelZoom=False,
+                       dragging=False)
+        folium.Marker(
+            [st.session_state.loc_lat, st.session_state.loc_lon]
+        ).add_to(m)
+        st_folium(m, height=100, width=None)
 
 ##########################
 st.header('🔌 Energy Generation Predictor')
