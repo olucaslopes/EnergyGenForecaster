@@ -49,6 +49,37 @@ streamlit run app.py
 
 4. The monthly energy generated and savings estimates will be displayed.
 
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph one["User Input"]
+    loc_input["📌 Location"]
+    area_input["📐 Panel Area"]
+    efic_input["💱 Panel Efficiency"]
+    energy_price["💵 Energy Price"]
+    end
+
+    loc_input-- "Address" -->nominatim["📍 Nominatim OpenStreetMap API"]
+    nominatim-- "Latitude and Longitude" -->ibge["🗺️ IBGE Localidades API"]
+    ibge -- "City Code" --> ml["🔍 Machine Learning Model"]
+    ml -- "Predicted Irradiation" --> calc["⚡ Energy"]
+    area_input --> calc
+    efic_input --> calc
+
+    subgraph two["Historical Data"]
+    database["🗃️ Cloud Database"]
+    meteo["🌦️ OpenMeteo API"]
+    meteo -- "City Irradiation Data" --> ml
+    database -- "Historical Data from <br>all Cities for Training" --> ml
+    end
+
+    subgraph three["Calculations"]
+    calc -- "Predicted Energy" --> savings["💲 Savings"]
+    energy_price --> savings
+    end
+
+```
 
 ## APIs Used
 
